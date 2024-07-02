@@ -1,0 +1,8 @@
+#TiO2.param
+ task             : geometryoptimisation
+ cutoff_energy    : 700 eV
+ xc_functional    : PBE
+ max_scf_cycles   : 100
+ calculate_stress : true
+ opt_strategy     : speed
+ num_dump_cycles  : 0
