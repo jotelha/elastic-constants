@@ -16,8 +16,54 @@ logger = logging.getLogger(__name__)
 
 version = 0.1
 
+# regular expressions must look different when using FIRE optimizer instead of LBFGS
+USE_FIRE = True
+#
+# typical unit cell entry using FIRE optimizer looks like this:
+#
+# ...
+# FIRE: Geometry optimization completed successfully.
+# FIRE: Final Configuration:
+#
+#                           -------------------------------
+#                                      Unit Cell
+#                           -------------------------------
+#        Real Lattice(A)              Reciprocal Lattice(1/A)
+#     4.5940000     0.0000000     0.0000000        1.367693798   0.000000000   0.000000000
+#     0.0000000     4.5940000     0.0000000        0.000000000   1.367693798   0.000000000
+#     0.0000000     0.0000000     2.9590000        0.000000000   0.000000000   2.123415109
+# ...
+#
+# while same entry looks like this for LBFGS:
+#
+# ...
+# LBFGS: Geometry optimization completed successfully.
+#
+#================================================================================
+# LBFGS: Final Configuration:
+#================================================================================
+#
+#                           -------------------------------
+#                                      Unit Cell
+#                           -------------------------------
+#        Real Lattice(A)              Reciprocal Lattice(1/A)
+#     4.6392052    -0.0000000    -0.0000000        1.354366749  -0.000000000   0.000000000
+#    -0.0000000     4.6392052     0.0000000       -0.000000000   1.354366749  -0.000000000
+#    -0.0000000     0.0000000     2.9721950        0.000000000  -0.000000000   2.113988224
+#
+# ...
+#
 # regular expression to match the whole of the final cell from a .castep file
-dotcastep_latt_RE = re.compile(r"""\sL?BFGS\s*:\sFinal\sConfiguration:\s*\n
+if USE_FIRE:
+    dotcastep_latt_RE = re.compile(r"""\sFIRE\s*:\sFinal\sConfiguration:\s*\n
+            \s*\n\s+\-+\s*\n\s+Unit\sCell\s*\n\s+\-+\s*\n
+	    \s+Real\sLattice\(A\)\s+Reciprocal\sLattice\(1/A\)\s*\n
+            \s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s*\n
+            \s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s*\n
+            \s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s*\n""",
+          re.VERBOSE)
+else:
+    dotcastep_latt_RE = re.compile(r"""\sL?BFGS\s*:\sFinal\sConfiguration:\s*\n
             =+\s*\n\s*\n\s+\-+\s*\n\s+Unit\sCell\s*\n\s+\-+\s*\n
 	    \s+Real\sLattice\(A\)\s+Reciprocal\sLattice\(1/A\)\s*\n
             \s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s+([\+\-]?\d+.\d+)\s*\n
