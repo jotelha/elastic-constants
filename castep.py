@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 version = 0.1
 
 # regular expressions must look different when using FIRE optimizer instead of LBFGS
-USE_FIRE = True
+USE_FIRE = False
 #
 # typical unit cell entry using FIRE optimizer looks like this:
 #
